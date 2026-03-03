@@ -5,3 +5,46 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELED
+}
+
+enum InvoiceType {
+  INCOME
+  EXPENSE
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  invoices  Invoice[]
+}
+
+model Invoice {
+  id        String        @id @default(uuid())
+  number    String
+  amount    Decimal       @db.Decimal(12,2)
+  issueDate DateTime
+  dueDate   DateTime
+  status    InvoiceStatus
+  type      InvoiceType
+
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@unique([userId, number])
+  @@index([userId])
+  @@index([dueDate])
+  @@index([status])
+}
