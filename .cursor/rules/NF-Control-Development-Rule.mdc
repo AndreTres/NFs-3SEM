@@ -1,0 +1,95 @@
+---
+alwaysApply: true
+---
+
+Project Overview
+
+This is a full-stack academic project built with:
+
+- Backend: Node.js + Express
+- ORM: Prisma
+- Database: Neon (PostgreSQL)
+- Frontend: React (Vite)
+- Authentication: JWT
+- Validation: Zod
+- Password Hashing: bcrypt
+
+Backend and frontend live in the same repository but are strictly isolated by responsibility.
+
+---
+
+Architectural Principles
+
+1. Clear separation of concerns:
+   - Controllers handle HTTP layer only.
+   - Services contain business logic.
+   - Prisma handles database access.
+   - No business logic inside controllers.
+
+2. Strict module isolation:
+   - Backend must never import frontend code.
+   - Frontend must never access the database directly.
+   - Communication only through HTTP API.
+
+3. Clean Code:
+   - Small functions.
+   - Explicit variable names.
+   - No duplicated logic.
+   - Strong typing (TypeScript).
+
+4. Defensive Programming:
+   - Validate all input using Zod.
+   - Never trust frontend validation.
+   - Handle errors centrally.
+   - Avoid unhandled promise rejections.
+
+5. Security First:
+   - Use bcrypt for password hashing.
+   - Use JWT with expiration.
+   - Protect routes using middleware.
+   - Use Helmet and properly configured CORS.
+   - Never expose sensitive environment variables.
+
+---
+
+AI Working Protocol
+
+1. Never modify multiple unrelated modules in one task.
+2. Always justify technical decisions.
+3. Always explain what files were changed.
+4. Never introduce new dependencies without explanation.
+5. Follow existing architecture strictly.
+6. When in doubt, ask before refactoring.
+7. Do not break working code.
+8. Prefer incremental changes over large rewrites.
+
+---
+
+Responsibility Division
+
+AI handles:
+- Boilerplate
+- Refactoring
+- Operational implementation
+- Validation schemas
+- Route wiring
+
+Developer handles:
+- Architecture decisions
+- Module boundaries
+- Security review
+- Final approval
+
+---
+
+Task Format Rule
+
+Every task must include:
+- Context
+- Objective
+- Files involved
+- Expected outcome
+- Constraints
+
+Never change folder structure without explicit authorization.
+Never convert the project into a different architecture style.
