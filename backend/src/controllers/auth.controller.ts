@@ -1,24 +1,15 @@
 import { Request, Response } from 'express';
 import { registerSchema } from '../schemas/auth.schema';
 import { loginSchema } from '../schemas/login.schema';
+import { validateSchema } from '../lib/validate';
 import { register, login } from '../services/auth.service';
 
 export async function registerController(
   req: Request,
   res: Response
 ): Promise<void> {
-  const parsed = registerSchema.safeParse(req.body);
-
-  if (!parsed.success) {
-    const message = parsed.error.issues
-      .map((issue: { message: string }) => issue.message)
-      .join('; ');
-    const err = new Error(message) as Error & { statusCode?: number };
-    err.statusCode = 400;
-    throw err;
-  }
-
-  const user = await register(parsed.data);
+  const data = validateSchema(registerSchema, req.body);
+  const user = await register(data);
   res.status(201).json({ success: true, data: user });
 }
 
@@ -26,17 +17,7 @@ export async function loginController(
   req: Request,
   res: Response
 ): Promise<void> {
-  const parsed = loginSchema.safeParse(req.body);
-
-  if (!parsed.success) {
-    const message = parsed.error.issues
-      .map((issue: { message: string }) => issue.message)
-      .join('; ');
-    const err = new Error(message) as Error & { statusCode?: number };
-    err.statusCode = 400;
-    throw err;
-  }
-
-  const result = await login(parsed.data);
+  const data = validateSchema(loginSchema, req.body);
+  const result = await login(data);
   res.json({ success: true, data: result });
 }

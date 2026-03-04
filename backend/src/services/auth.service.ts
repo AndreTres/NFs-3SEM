@@ -7,6 +7,7 @@ import type { LoginInput } from '../schemas/login.schema';
 
 export type UserWithoutPassword = {
   id: string;
+  name: string;
   email: string;
   createdAt: Date;
   updatedAt: Date;
@@ -34,6 +35,7 @@ export async function register(
 
   const user = await prisma.user.create({
     data: {
+      name: input.name,
       email: input.email,
       password: hashedPassword,
     },
