@@ -99,10 +99,6 @@ routes → controllers → services → prisma
 
 O servidor estará disponível em `http://localhost:3000` (ou na porta definida em `PORT` no `.env`).
 
-## Setup do Backend
-
-_(Instruções serão adicionadas na fase de configuração do backend.)_
-
 ## Setup do Frontend
 
 _(Instruções serão adicionadas na fase de configuração do frontend.)_
