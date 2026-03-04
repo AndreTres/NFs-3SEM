@@ -5,6 +5,11 @@ import type { createInvoiceSchema, updateInvoiceSchema } from '../schemas/invoic
 type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>;
 type UpdateInvoiceInput = z.infer<typeof updateInvoiceSchema>;
 
+type GetInvoicesOptions = {
+  page?: number;
+  limit?: number;
+};
+
 function throwNotFound(message: string): never {
   const err = new Error(message) as Error & { statusCode?: number };
   err.statusCode = 404;
@@ -31,10 +36,19 @@ export async function createInvoice(userId: string, data: CreateInvoiceInput) {
   });
 }
 
-export async function getInvoices(userId: string) {
+export async function getInvoices(
+  userId: string,
+  options: GetInvoicesOptions = {}
+) {
+  const page = options.page ?? 1;
+  const limit = options.limit ?? 10;
+  const skip = (page - 1) * limit;
+
   return prisma.invoice.findMany({
     where: { userId },
     orderBy: { createdAt: 'desc' },
+    skip,
+    take: limit,
   });
 }
 
