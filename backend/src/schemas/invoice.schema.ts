@@ -31,3 +31,15 @@ export const updateInvoiceSchema = z.object({
   status: InvoiceStatus.optional(),
   type: InvoiceType.optional(),
 });
+
+export const paramsIdSchema = z.object({
+  id: z.string().uuid(),
+});
+
+export const invoiceQuerySchema = z.object({
+  page: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().optional(),
+  status: InvoiceStatus.optional(),
+  type: InvoiceType.optional(),
+  sort: z.string().optional(),
+});

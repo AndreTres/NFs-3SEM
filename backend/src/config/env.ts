@@ -9,6 +9,7 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(1),
   JWT_EXPIRES_IN: z.string().min(1),
   BCRYPT_ROUNDS: z.string().regex(/^\d+$/),
+  FRONTEND_URL: z.string().min(1),
 });
 
 const parsed = envSchema.safeParse(process.env);
@@ -25,4 +26,5 @@ export const env = {
   jwtSecret: parsed.data.JWT_SECRET,
   jwtExpiresIn: parsed.data.JWT_EXPIRES_IN,
   bcryptRounds: Number(parsed.data.BCRYPT_ROUNDS),
+  frontendUrl: parsed.data.FRONTEND_URL,
 };

@@ -1,14 +1,14 @@
 import { prisma } from '../lib/prisma';
 import type { z } from 'zod';
-import type { createInvoiceSchema, updateInvoiceSchema } from '../schemas/invoice.schema';
+import type {
+  createInvoiceSchema,
+  updateInvoiceSchema,
+  invoiceQuerySchema,
+} from '../schemas/invoice.schema';
 
 type CreateInvoiceInput = z.infer<typeof createInvoiceSchema>;
 type UpdateInvoiceInput = z.infer<typeof updateInvoiceSchema>;
-
-type GetInvoicesOptions = {
-  page?: number;
-  limit?: number;
-};
+type GetInvoicesQuery = z.infer<typeof invoiceQuerySchema>;
 
 function throwNotFound(message: string): never {
   const err = new Error(message) as Error & { statusCode?: number };
@@ -38,18 +38,37 @@ export async function createInvoice(userId: string, data: CreateInvoiceInput) {
 
 export async function getInvoices(
   userId: string,
-  options: GetInvoicesOptions = {}
+  query: GetInvoicesQuery = {}
 ) {
-  const page = options.page ?? 1;
-  const limit = options.limit ?? 10;
-  const skip = (page - 1) * limit;
+  const { page = 1, limit = 10, status, type, sort } = query;
 
-  return prisma.invoice.findMany({
-    where: { userId },
-    orderBy: { createdAt: 'desc' },
-    skip,
-    take: limit,
-  });
+  const where = {
+    userId,
+    ...(status && { status }),
+    ...(type && { type }),
+  };
+
+  const [invoices, total] = await Promise.all([
+    prisma.invoice.findMany({
+      where,
+      orderBy: sort ? { [sort]: 'asc' } : { createdAt: 'desc' },
+      skip: (page - 1) * limit,
+      take: limit,
+    }),
+    prisma.invoice.count({ where }),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    data: invoices,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages,
+    },
+  };
 }
 
 export async function getInvoiceById(userId: string, id: string) {

@@ -1,6 +1,11 @@
 import { Response, NextFunction } from 'express';
 import { validateSchema } from '../lib/validate';
-import { createInvoiceSchema, updateInvoiceSchema } from '../schemas/invoice.schema';
+import {
+  createInvoiceSchema,
+  updateInvoiceSchema,
+  paramsIdSchema,
+  invoiceQuerySchema,
+} from '../schemas/invoice.schema';
 import {
   createInvoice,
   getInvoices,
@@ -32,8 +37,9 @@ export async function getInvoicesController(
 ): Promise<void> {
   try {
     const userId = req.user!.userId;
-    const invoices = await getInvoices(userId);
-    res.json({ success: true, data: invoices });
+    const query = validateSchema(invoiceQuerySchema, req.query);
+    const result = await getInvoices(userId, query);
+    res.json({ success: true, ...result });
   } catch (err) {
     next(err);
   }
@@ -46,7 +52,7 @@ export async function getInvoiceByIdController(
 ): Promise<void> {
   try {
     const userId = req.user!.userId;
-    const id = req.params.id as string;
+    const { id } = validateSchema(paramsIdSchema, req.params);
     const invoice = await getInvoiceById(userId, id);
     res.json({ success: true, data: invoice });
   } catch (err) {
@@ -61,7 +67,7 @@ export async function updateInvoiceController(
 ): Promise<void> {
   try {
     const userId = req.user!.userId;
-    const id = req.params.id as string;
+    const { id } = validateSchema(paramsIdSchema, req.params);
     const data = validateSchema(updateInvoiceSchema, req.body);
     const invoice = await updateInvoice(userId, id, data);
     res.json({ success: true, data: invoice });
@@ -77,7 +83,7 @@ export async function deleteInvoiceController(
 ): Promise<void> {
   try {
     const userId = req.user!.userId;
-    const id = req.params.id as string;
+    const { id } = validateSchema(paramsIdSchema, req.params);
     await deleteInvoice(userId, id);
     res.status(204).send();
   } catch (err) {

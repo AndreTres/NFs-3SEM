@@ -1,20 +1,19 @@
 import { Request, Response, NextFunction } from 'express';
 import { logger } from '../lib/logger';
-
-type ErrorWithStatus = Error & { statusCode?: number };
+import { AppError } from '../errors/app-error';
 
 export function errorMiddleware(
-  err: ErrorWithStatus,
+  err: Error,
   _req: Request,
   res: Response,
   _next: NextFunction
 ): void {
-  const status = err.statusCode ?? 500;
+  const status = err instanceof AppError ? err.statusCode : 500;
   const message =
     status >= 500 ? 'Internal server error' : (err.message ?? 'Error');
 
   if (status >= 500) {
-    logger.error(message);
+    logger.error(err.stack ?? err.message);
   } else {
     logger.warn(message);
   }
