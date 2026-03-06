@@ -43,3 +43,7 @@ export const invoiceQuerySchema = z.object({
   type: InvoiceType.optional(),
   sort: z.string().optional(),
 });
+
+export const monthlyQuerySchema = z.object({
+  months: z.coerce.number().int().positive().optional(),
+});

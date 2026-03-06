@@ -128,3 +128,102 @@ export async function deleteInvoice(userId: string, id: string) {
     where: { id },
   });
 }
+
+export type InvoicesSummary = {
+  income: number;
+  expenses: number;
+  balance: number;
+};
+
+export async function getInvoicesSummary(
+  userId: string
+): Promise<InvoicesSummary> {
+  const [incomeResult, expensesResult] = await Promise.all([
+    prisma.invoice.aggregate({
+      where: { userId, type: 'INCOME' },
+      _sum: { amount: true },
+    }),
+    prisma.invoice.aggregate({
+      where: { userId, type: 'EXPENSE' },
+      _sum: { amount: true },
+    }),
+  ]);
+
+  const income = Number(incomeResult._sum.amount ?? 0);
+  const expenses = Number(expensesResult._sum.amount ?? 0);
+  const balance = income - expenses;
+
+  return { income, expenses, balance };
+}
+
+export type InvoicesStats = {
+  PENDING: number;
+  PAID: number;
+  OVERDUE: number;
+  CANCELED: number;
+};
+
+export async function getInvoicesStats(
+  userId: string
+): Promise<InvoicesStats> {
+  const groups = await prisma.invoice.groupBy({
+    by: ['status'],
+    where: { userId },
+    _count: { id: true },
+  });
+
+  const stats: InvoicesStats = {
+    PENDING: 0,
+    PAID: 0,
+    OVERDUE: 0,
+    CANCELED: 0,
+  };
+
+  for (const row of groups) {
+    stats[row.status] = row._count.id;
+  }
+
+  return stats;
+}
+
+export type MonthlyMetric = {
+  month: string;
+  income: number;
+  expenses: number;
+};
+
+type MonthlyMetricRow = {
+  month: string;
+  income: unknown;
+  expenses: unknown;
+};
+
+export async function getMonthlyMetrics(
+  userId: string,
+  months?: number
+): Promise<MonthlyMetric[]> {
+  const startDate = new Date();
+  if (months != null) {
+    startDate.setMonth(startDate.getMonth() - months);
+  } else {
+    startDate.setTime(0);
+  }
+
+  const rows = await prisma.$queryRaw<MonthlyMetricRow[]>`
+    SELECT
+      TO_CHAR(DATE_TRUNC('month', "issueDate"), 'YYYY-MM') as month,
+      COALESCE(SUM(CASE WHEN type = 'INCOME' THEN amount ELSE 0 END), 0)::float as income,
+      COALESCE(SUM(CASE WHEN type = 'EXPENSE' THEN amount ELSE 0 END), 0)::float as expenses
+    FROM "Invoice"
+    WHERE "userId" = ${userId}
+    AND "issueDate" >= ${startDate}
+    GROUP BY DATE_TRUNC('month', "issueDate")
+    ORDER BY month
+  `;
+
+  return rows.map((row) => ({
+    month: row.month,
+    income: Number(row.income),
+    expenses: Number(row.expenses),
+  }));
+}

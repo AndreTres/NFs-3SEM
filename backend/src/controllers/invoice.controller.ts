@@ -5,11 +5,15 @@ import {
   updateInvoiceSchema,
   paramsIdSchema,
   invoiceQuerySchema,
+  monthlyQuerySchema,
 } from '../schemas/invoice.schema';
 import {
   createInvoice,
   getInvoices,
   getInvoiceById,
+  getInvoicesSummary,
+  getInvoicesStats,
+  getMonthlyMetrics,
   updateInvoice,
   deleteInvoice,
 } from '../services/invoice.service';
@@ -40,6 +44,49 @@ export async function getInvoicesController(
     const query = validateSchema(invoiceQuerySchema, req.query);
     const result = await getInvoices(userId, query);
     res.json({ success: true, ...result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getInvoicesSummaryController(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const userId = req.user!.userId;
+    const summary = await getInvoicesSummary(userId);
+    res.json({ success: true, data: summary });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getInvoicesStatsController(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const userId = req.user!.userId;
+    const stats = await getInvoicesStats(userId);
+    res.json({ success: true, data: stats });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function getMonthlyMetricsController(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const userId = req.user!.userId;
+    const query = validateSchema(monthlyQuerySchema, req.query);
+    const data = await getMonthlyMetrics(userId, query.months);
+    res.json({ success: true, data });
   } catch (err) {
     next(err);
   }
