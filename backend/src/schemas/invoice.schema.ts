@@ -36,12 +36,27 @@ export const paramsIdSchema = z.object({
   id: z.string().uuid(),
 });
 
+const invoiceSortFields = [
+  'number',
+  'amount',
+  'issueDate',
+  'dueDate',
+  'createdAt',
+  'status',
+  'type',
+] as const;
+
+const sortValues = [
+  ...invoiceSortFields,
+  ...invoiceSortFields.map((f) => `-${f}` as const),
+] as const;
+
 export const invoiceQuerySchema = z.object({
   page: z.coerce.number().int().positive().optional(),
   limit: z.coerce.number().int().positive().optional(),
   status: InvoiceStatus.optional(),
   type: InvoiceType.optional(),
-  sort: z.string().optional(),
+  sort: z.enum(sortValues).optional(),
 });
 
 export const monthlyQuerySchema = z.object({

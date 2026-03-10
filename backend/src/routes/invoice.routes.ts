@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middlewares/auth.middleware';
+import { invoicesRateLimit } from '../middlewares/rate-limit.middleware';
 import {
   createInvoiceController,
   getInvoicesController,
@@ -14,6 +15,7 @@ import {
 const router = Router();
 
 router.use(authMiddleware);
+router.use(invoicesRateLimit);
 
 router.post('/', createInvoiceController);
 router.get('/', getInvoicesController);

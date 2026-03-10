@@ -48,10 +48,16 @@ export async function getInvoices(
     ...(type && { type }),
   };
 
+  const order =
+    sort?.startsWith('-') === true
+      ? ('desc' as const)
+      : ('asc' as const);
+  const sortField = sort?.startsWith('-') ? sort.slice(1) : sort;
+
   const [invoices, total] = await Promise.all([
     prisma.invoice.findMany({
       where,
-      orderBy: sort ? { [sort]: 'asc' } : { createdAt: 'desc' },
+      orderBy: sortField ? { [sortField]: order } : { createdAt: 'desc' },
       skip: (page - 1) * limit,
       take: limit,
     }),

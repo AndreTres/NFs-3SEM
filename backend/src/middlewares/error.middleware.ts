@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { Prisma } from '@prisma/client';
 import { logger } from '../lib/logger';
 import { AppError } from '../errors/app-error';
 
@@ -8,7 +9,23 @@ export function errorMiddleware(
   res: Response,
   _next: NextFunction
 ): void {
-  const status = err instanceof AppError ? err.statusCode : 500;
+  if (
+    err instanceof Prisma.PrismaClientKnownRequestError &&
+    err.code === 'P2002'
+  ) {
+    res.status(409).json({
+      success: false,
+      error: 'Resource already exists',
+    });
+    return;
+  }
+
+  const status =
+    err instanceof AppError
+      ? err.statusCode
+      : typeof (err as Error & { statusCode?: number }).statusCode === 'number'
+        ? (err as Error & { statusCode: number }).statusCode
+        : 500;
   const message =
     status >= 500 ? 'Internal server error' : (err.message ?? 'Error');
 
