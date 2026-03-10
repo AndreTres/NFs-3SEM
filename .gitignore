@@ -8,6 +8,7 @@ build/
 
 # Ambiente
 .env
+.env.test
 .env.local
 .env.*.local
 
